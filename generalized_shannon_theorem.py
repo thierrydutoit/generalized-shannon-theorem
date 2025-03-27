@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 st.title("The Generalized Shannon Theorem")
 
 # Intro
-st.markdown('''Sampling a narrowbnad signal with sampling frequency $F_s$ lower 
+st.markdown('''Sampling a narrowband signal with sampling frequency $F_s$ lower 
             than twice the maximum frequency of the signal does not always lead
-	        to aliasing.\\
+	    to aliasing.\\
             In this example, you can adjust the sampling frequency to see how 
             it affects the spectral content of the sampled signal (in red). 
             The original signal (in blue) is a narrowband signal with 
@@ -131,7 +131,7 @@ with st.expander("Open for comments"):
           original signal. However, since no aliasing occurs, it is still 
           possible to recover the original signal (by further digital upsampling 
           and band-pass filtering).\\
-	 	  \\
+	  \\
           _NotaBene_: for convenience, the effect of the sampling frequency on the 
          magnitude of the sampled signal spectrum has been compensated for in the 
          plot. """) 
