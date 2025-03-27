@@ -10,7 +10,7 @@ st.title("The Generalized Shannon Theorem")
 # Intro
 st.markdown('''Sampling a narrowbnad signal with sampling frequency $F_s$ lower 
             than twice the maximum frequency of the signal does not always lead
-	    to aliasing.\\
+	        to aliasing.\\
             In this example, you can adjust the sampling frequency to see how 
             it affects the spectral content of the sampled signal (in red). 
             The original signal (in blue) is a narrowband signal with 
@@ -102,35 +102,37 @@ st.audio(sampled_signal, sample_rate=sampling_rate)
 
 # Explanation of the generalized Shannon theorem
 with st.expander("Open for comments"):
-	st.write("""
-         The generalized Shannon theorem states that to avoid aliasing when 
-         sampling a narrowband signal 
-         (with central frequency $F_0$ and bandwidth $B$), 
-         the sampling frequency must be at least twice the bandwidth of the signal: """)
-	st.latex('''F_s>=2B''')
-	st.write("""  
-         Yet, not all such frequencies are acceptable, given the possible overlap 
-         between positive and negative spectral images.
-         This excludes the following sampling frequencies: """)
-	st.latex('''[(2F_0-B)/k, (2F_0+B)/k ],''')
-	st.write(""" with $k$ integer but not 0. As a matter of fact, for $k$ odd,
+    st.write("""In this example, aliasing occurs when $F_s$ lies in:""")
+    st.latex('''[0,440] \cup [450,550] \cup [600,733] \cup [900,1100] 
+             \cup [1800,2200]''')
+    st.write("""
+         	The generalized Shannon theorem states that to avoid aliasing when 
+         	sampling a narrowband signal (with central frequency $F_0$ 
+            and bandwidth $B$), the sampling frequency must obvuously be at 
+            least twice the bandwidth of the signal: """)
+    st.latex('''F_s>=2B''')
+    st.write("""  
+          Yet, not all such frequencies are acceptable, given the possible overlap 
+          between positive and negative spectral images.
+          This excludes the following sampling frequencies: """)
+    st.latex('''[(2F_0-B)/k, (2F_0+B)/k ],''')
+    st.write(""" with $k$ integer but not 0. As a matter of fact, for $k$ odd,
           values of $F_s$ in these intervals put the Nyquist frequency inside 
           a spectral image; for $k$ even, they put the zero frequency inside a 
-          spectral image. In both cases, this lead to aliasing. """)
-	st.write("""
-         In our example, this clearly leads to excluding $F_s$ from:""")
-	st.latex('''[0,400] \cup [333,440] 
-         \cup [450,550] \cup [600,733] \cup [900,1100] \cup [1800,2200]''')
-	st.write("""
-         So, in this example, the smallest posible sampling frequency is 440 Hz. \\
-         Notice, by examining the spectral conent of the sampled signal, and
-	 by listening to it, that using sampling frequencies $F_s<2(F_0+B/2)$ 
-         leads to signals in the $[0,F_s/2]$ band that are different from the 
-         original signal. However, since no aliasing occurs, it is still 
-         possible to recover the original signal (by further digital upsampling 
-         and band-pass filtering).\\
-	 \\
-	 $_NotaBene: for convenience, the effect of the sampling frequency on the 
+          spectral image. In both cases, this lead to aliasing. \\
+          In our example, this clearly leads to excluding $F_s$ from:""")
+    st.latex('''[0,400] \cup [333,440] 
+          \cup [450,550] \cup [600,733] \cup [900,1100] \cup [1800,2200]''')
+    st.write("""
+          So, in this example, the smallest posible sampling frequency is 440 Hz. \\
+          Notice, by examining the spectral content of the sampled signal, and
+          by listening to it, that using sampling frequencies $F_s<2(F_0+B/2)$ 
+          leads to signals in the $[0,F_s/2]$ band that are different from the 
+          original signal. However, since no aliasing occurs, it is still 
+          possible to recover the original signal (by further digital upsampling 
+          and band-pass filtering).\\
+	 	  \\
+          _NotaBene_: for convenience, the effect of the sampling frequency on the 
          magnitude of the sampled signal spectrum has been compensated for in the 
-	 plot. """) 
+         plot. """) 
 	
