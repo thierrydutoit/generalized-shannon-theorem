@@ -9,7 +9,7 @@ st.title("The Generalized Shannon Theorem")
 
 # Intro
 st.markdown('''Sampling a narrowbnad signal with sampling frequency $F_s$ lower 
-            than twice the maximum frequency of the signal does not always lead \\
+            than twice the maximum frequency of the signal does not always lead
 	    to aliasing.\\
             In this example, you can adjust the sampling frequency to see how 
             it affects the spectral content of the sampled signal (in red). 
@@ -130,7 +130,7 @@ with st.expander("Open for comments"):
          possible to recover the original signal (by further digital upsampling 
          and band-pass filtering).\\
 	 \\
-	 _NotaBene: for convenience, the effect of the sampling frequency on the 
+	 $_NotaBene: for convenience, the effect of the sampling frequency on the 
          magnitude of the sampled signal spectrum has been compensated for in the 
 	 plot. """) 
 	
