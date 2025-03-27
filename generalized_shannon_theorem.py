@@ -9,7 +9,8 @@ st.title("The Generalized Shannon Theorem")
 
 # Intro
 st.markdown('''Sampling a narrowbnad signal with sampling frequency $F_s$ lower 
-            than twice the maximum frequency does not always lead to aliasing. \\
+            than twice the maximum frequency of the signal does not always lead \\
+	    to aliasing.\\
             In this example, you can adjust the sampling frequency to see how 
             it affects the spectral content of the sampled signal (in red). 
             The original signal (in blue) is a narrowband signal with 
@@ -24,7 +25,7 @@ sampling_rate = st.slider("Sampling frequency $F_s$ (Hz)", 300, 4000, 4000)
 duration = 0.1 
 center_frequency =1000 
 bandwidth = 200 
-pseudo_sampling_rate=4000
+pseudo_sampling_rate=4000   # Chosen high enough to avoid aliasing
 t = np.arange(-duration,duration,1/pseudo_sampling_rate)
 signal = np.cos(2 * np.pi * center_frequency * t) * np.sinc(bandwidth * t) \
     + 0.01 * np.cos(2 * np.pi * (center_frequency+bandwidth/3) * t)
@@ -33,7 +34,6 @@ signal = np.cos(2 * np.pi * center_frequency * t) * np.sinc(bandwidth * t) \
 ts = np.arange(-duration,duration,1/sampling_rate)
 sampled_signal = np.cos(2 * np.pi * center_frequency * ts) * np.sinc(bandwidth * ts) \
     + 0.01 * np.cos(2 * np.pi * (center_frequency+bandwidth/3) * ts)
-
 
 # Spectral analysis
 fig_spec, ax_spec = plt.subplots(figsize=(10, 4),tight_layout=True)
@@ -118,14 +118,19 @@ with st.expander("Open for comments"):
           a spectral image; for $k$ even, they put the zero frequency inside a 
           spectral image. In both cases, this lead to aliasing. """)
 	st.write("""
-         In our example, this leads to excluding $F_s$ from:""")
+         In our example, this clearly leads to excluding $F_s$ from:""")
 	st.latex('''[0,400] \cup [333,440] 
          \cup [450,550] \cup [600,733] \cup [900,1100] \cup [1800,2200]''')
 	st.write("""
          So, in this example, the smallest posible sampling frequency is 440 Hz. \\
-         Notice by listening that using sampling frequencies $F_s<2(F_0+B/2)$ 
+         Notice, by examining the spectral conent of the sampled signal, and
+	 by listening to it, that using sampling frequencies $F_s<2(F_0+B/2)$ 
          leads to signals in the $[0,F_s/2]$ band that are different from the 
          original signal. However, since no aliasing occurs, it is still 
-         spossible to recover the original signal (by digital upsampling 
-         and band-pass filtering).""") 
+         possible to recover the original signal (by further digital upsampling 
+         and band-pass filtering).\\
+	 \\
+	 _NotaBene: for convenience, the effect of the sampling frequency on the 
+         magnitude of the sampled signal spectrum has been compensated for in the 
+	 plot. """) 
 	
