@@ -106,8 +106,8 @@ with st.expander("Open for comments"):
     st.latex('''[0,440] \cup [450,550] \cup [600,733] \cup [900,1100] 
              \cup [1800,2200]''')
     st.write("""
-         	The generalized Shannon theorem states that to avoid aliasing when 
-         	sampling a narrowband signal (with central frequency $F_0$ 
+            The generalized Shannon theorem states that to avoid aliasing when 
+            sampling a narrowband signal (with central frequency $F_0$ 
             and bandwidth $B$), the sampling frequency must obvuously be at 
             least twice the bandwidth of the signal: """)
     st.latex('''F_s>=2B''')
@@ -119,7 +119,7 @@ with st.expander("Open for comments"):
     st.write(""" with $k$ integer but not 0. As a matter of fact, for $k$ odd,
           values of $F_s$ in these intervals put the Nyquist frequency inside 
           a spectral image; for $k$ even, they put the zero frequency inside a 
-          spectral image. In both cases, this lead to aliasing. \\
+          spectral image. In both cases, this causes aliasing. \\
           In our example, this clearly leads to excluding $F_s$ from:""")
     st.latex('''[0,400] \cup [333,440] 
           \cup [450,550] \cup [600,733] \cup [900,1100] \cup [1800,2200]''')
