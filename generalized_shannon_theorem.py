@@ -108,7 +108,7 @@ with st.expander("Open for comments"):
     st.write("""
             The generalized Shannon theorem states that to avoid aliasing when 
             sampling a narrowband signal (with central frequency $F_0$ 
-            and bandwidth $B$), the sampling frequency must obvuously be at 
+            and bandwidth $B$), the sampling frequency must obviously be at 
             least twice the bandwidth of the signal: """)
     st.latex('''F_s>=2B''')
     st.write("""  
