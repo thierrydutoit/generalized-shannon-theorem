@@ -119,7 +119,7 @@ with st.expander("Open for comments"):
     st.write(""" with $k$ integer but not 0. As a matter of fact, for $k$ odd,
           values of $F_s$ in these intervals put the Nyquist frequency inside 
           a spectral image; for $k$ even, they put the zero frequency inside a 
-          spectral image. In both cases, this causes aliasing. \\
+          spectral image. In both cases, aliasing occurs. \\
           In our example, this clearly leads to excluding $F_s$ from:""")
     st.latex('''[0,400] \cup [333,440] 
           \cup [450,550] \cup [600,733] \cup [900,1100] \cup [1800,2200]''')
