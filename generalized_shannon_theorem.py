@@ -19,7 +19,7 @@ st.markdown('''Sampling a narrowband signal with sampling frequency $F_s$ lower
             ''') 
 
 # Choose the sampling frequency
-sampling_rate = st.slider("Sampling frequency $F_s$ (Hz)", 300, 4000, 4000)
+sampling_rate = st.slider("Sampling frequency $F_s$ (Hz)", 300, 3000, 3000)
 
 # Generate the narrowband signal
 duration = 0.1 
