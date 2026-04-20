@@ -110,15 +110,7 @@ ax_spec.plot(
     color="red"
 )
 
-ax_spec.plot(
-    reconstructed_frequencies,
-    reconstructed_spectrum,
-    label="Filtered reconstruction",
-    color="purple",
-    linewidth=2
-)
-
-ax_spec.set_title("Spectral View of Original, Sampled, and Reconstructed Signals")
+ax_spec.set_title("Spectral View of Original and Sampled Signals")
 ax_spec.set_xlabel("Frequency (Hz)")
 ax_spec.set_ylabel("Magnitude")
 ax_spec.legend()
@@ -179,7 +171,7 @@ st.audio(signal, sample_rate=pseudo_sampling_rate)
 st.markdown("**Sampled signal**")
 st.audio(sampled_signal, sample_rate=sampling_rate)
 
-st.markdown("**Band-pass filtered reconstruction**")
+st.markdown("**Band-pass filtered**")
 st.audio(reconstructed_signal, sample_rate=pseudo_sampling_rate)
 
 # Explanation of the generalized Shannon theorem
