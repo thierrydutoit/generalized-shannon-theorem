@@ -1,8 +1,6 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-# from scipy.io.wavfile import write
-# import io
 
 # Title of the application
 st.title("The Generalized Shannon Theorem")
@@ -10,60 +8,117 @@ st.title("The Generalized Shannon Theorem")
 # Intro
 st.markdown('''Sampling a narrowband signal with sampling frequency $F_s$ lower 
             than twice the maximum frequency of the signal does not always lead
-	    to aliasing.\\
+            to aliasing.\\
             In this example, you can adjust the sampling frequency to see how 
             it affects the spectral content of the sampled signal (in red). 
             The original signal (in blue) is a narrowband signal with 
-            central frequency $F_0=1000 Hz$ and bandwidth $B=200 Hz$. \\
+            central frequency $F_0=1000$ Hz and bandwidth $B=200$ Hz. \\
             Find which sampling frequencies are acceptable, and why.
-            ''') 
+            ''')
 
 # Choose the sampling frequency
-sampling_rate = st.slider("Sampling frequency $F_s$ (Hz)", 300, 3000, 3000)
+sampling_rate = st.slider("Sampling frequency $F_s$ (Hz)", 300, 4000, 4000)
 
-# Generate the narrowband signal
-duration = 0.1 
-center_frequency =1000 
-bandwidth = 200 
-pseudo_sampling_rate=4000   # Chosen high enough to avoid aliasing
-t = np.arange(-duration,duration,1/pseudo_sampling_rate)
-signal = np.cos(2 * np.pi * center_frequency * t) * np.sinc(bandwidth * t) \
-    + 0.01 * np.cos(2 * np.pi * (center_frequency+bandwidth/3) * t)
+# Parameters
+duration = 0.1
+center_frequency = 1000
+bandwidth = 200
+pseudo_sampling_rate = 10000   # "analog-like" grid for spectral display
 
-# Sampling the signal
-ts = np.arange(-duration,duration,1/sampling_rate)
-sampled_signal = np.cos(2 * np.pi * center_frequency * ts) * np.sinc(bandwidth * ts) \
-    + 0.01 * np.cos(2 * np.pi * (center_frequency+bandwidth/3) * ts)
+# Generate the narrowband signal on a dense grid
+t = np.arange(-duration, duration, 1 / pseudo_sampling_rate)
+signal = (
+    np.cos(2 * np.pi * center_frequency * t) * np.sinc(bandwidth * t)
+    + 0.01 * np.cos(2 * np.pi * (center_frequency + bandwidth / 3) * t)
+)
+
+# Sampled version
+ts = np.arange(-duration, duration, 1 / sampling_rate)
+sampled_signal = (
+    np.cos(2 * np.pi * center_frequency * ts) * np.sinc(bandwidth * ts)
+    + 0.01 * np.cos(2 * np.pi * (center_frequency + bandwidth / 3) * ts)
+)
+
+# -------------------------------------------------------------------
+# Reconstructed signal: impulse train + ideal analog band-pass filter
+# -------------------------------------------------------------------
+t_rec = np.arange(-duration, duration, 1 / pseudo_sampling_rate)
+
+# Build a weighted impulse train on the dense grid
+impulse_train = np.zeros_like(t_rec)
+
+sample_indices = np.round((ts - t_rec[0]) * pseudo_sampling_rate).astype(int)
+valid = (sample_indices >= 0) & (sample_indices < len(t_rec))
+impulse_train[sample_indices[valid]] = sampled_signal[valid] * (pseudo_sampling_rate/sampling_rate)
+# The factor sampling_rate compensates for the sampling interval
+# so the impulse train better approximates Σ x[n] δ(t-nTs)
+
+# Ideal band-pass filtering in the frequency domain
+freq_rec = np.fft.fftfreq(len(t_rec), d=1 / pseudo_sampling_rate)
+X_imp = np.fft.fft(impulse_train)
+
+bp_mask = ((np.abs(freq_rec) >= 900) & (np.abs(freq_rec) <= 1100)).astype(float)
+
+reconstructed_signal = np.real(np.fft.ifft(X_imp * bp_mask))
 
 # Spectral analysis
-fig_spec, ax_spec = plt.subplots(figsize=(10, 4),tight_layout=True)
+fig_spec, ax_spec = plt.subplots(figsize=(10, 4), tight_layout=True)
 
-# Compute Fourier Transform of original signal
-frequencies = np.fft.fftfreq(len(t), 1/pseudo_sampling_rate)
-original_spectrum = 1/pseudo_sampling_rate*np.abs(np.fft.fft(signal))
-frequencies=np.fft.fftshift(frequencies)
-original_spectrum=np.fft.fftshift(original_spectrum)
+# Fourier Transform of original signal
+frequencies = np.fft.fftfreq(len(t), 1 / pseudo_sampling_rate)
+original_spectrum = 1 / pseudo_sampling_rate * np.abs(np.fft.fft(signal))
+frequencies = np.fft.fftshift(frequencies)
+original_spectrum = np.fft.fftshift(original_spectrum)
 
-# Compute Fourier Transform of sampled signal
-sampled_frequencies = np.fft.fftfreq(len(ts), 1/sampling_rate)
-sampled_spectrum = 1/sampling_rate*np.abs(np.fft.fft(sampled_signal))
-sampled_frequencies=np.fft.fftshift(sampled_frequencies)
-sampled_spectrum=np.fft.fftshift(sampled_spectrum)
+# Fourier Transform of sampled signal
+sampled_frequencies = np.fft.fftfreq(len(ts), 1 / sampling_rate)
+sampled_spectrum = 1 / sampling_rate * np.abs(np.fft.fft(sampled_signal))
+sampled_frequencies = np.fft.fftshift(sampled_frequencies)
+sampled_spectrum = np.fft.fftshift(sampled_spectrum)
+
+# Fourier Transform of reconstructed signal
+reconstructed_frequencies = np.fft.fftfreq(len(t_rec), 1 / pseudo_sampling_rate)
+reconstructed_spectrum = 1 / pseudo_sampling_rate * np.abs(np.fft.fft(reconstructed_signal))
+reconstructed_frequencies = np.fft.fftshift(reconstructed_frequencies)
+reconstructed_spectrum = np.fft.fftshift(reconstructed_spectrum)
 
 # Show spectral content
-plt.xlim(-2000, 2000)
-plt.ylim(0, 0.006)
-ax_spec.plot(frequencies, original_spectrum, label="Original Spectrum", linewidth=4)
-ax_spec.stem([-sampling_rate/2.0,sampling_rate/2.0], [0.006,0.006], 'g', 
-             label="Nyquyst frequency $F_s/2$")
-s_frequencies =[]
-s_spectrum=[]
-for i in range (-7, 7):
-    s_frequencies = np.append(s_frequencies, sampled_frequencies+i*sampling_rate)
+ax_spec.set_xlim(-2000, 2000)
+ax_spec.set_ylim(0, 0.006)
+
+ax_spec.plot(frequencies, original_spectrum, label="Original Spectrum", linewidth=3)
+ax_spec.stem(
+    [-sampling_rate / 2.0, sampling_rate / 2.0],
+    [0.006, 0.006],
+    linefmt='g-',
+    markerfmt='go',
+    basefmt=' ',
+    label="Nyquist frequency $F_s/2$"
+)
+
+s_frequencies = []
+s_spectrum = []
+for i in range(-7, 7):
+    s_frequencies = np.append(s_frequencies, sampled_frequencies + i * sampling_rate)
     s_spectrum = np.append(s_spectrum, sampled_spectrum)
-ax_spec.plot(s_frequencies, s_spectrum, label="Sampled Spectrum", 
-             linestyle='dashed', color="red")
-ax_spec.set_title("Spectral View of Original and Sampled Signals")
+
+ax_spec.plot(
+    s_frequencies,
+    s_spectrum,
+    label="Sampled Spectrum",
+    linestyle='dashed',
+    color="red"
+)
+
+ax_spec.plot(
+    reconstructed_frequencies,
+    reconstructed_spectrum,
+    label="Filtered reconstruction",
+    color="purple",
+    linewidth=2
+)
+
+ax_spec.set_title("Spectral View of Original, Sampled, and Reconstructed Signals")
 ax_spec.set_xlabel("Frequency (Hz)")
 ax_spec.set_ylabel("Magnitude")
 ax_spec.legend()
@@ -71,68 +126,98 @@ ax_spec.grid()
 
 st.pyplot(fig_spec)
 
-# Display the original signal and the sampled signal in [-0.01, 0.01]
-fig, ax = plt.subplots(figsize=(10, 4),tight_layout=True)
+# Display signals in [-0.01, 0.01]
+fig, ax = plt.subplots(figsize=(10, 4), tight_layout=True)
 
-# Original signal
-ts_short = np.arange(-0.01,0.01,1/20000)
-signal_short = np.cos(2 * np.pi * center_frequency * ts_short) * np.sinc(bandwidth * ts_short) \
-    + 0.01 * np.cos(2 * np.pi * (center_frequency+bandwidth/3) * ts_short)
+# Original signal on a short dense interval
+ts_short = np.arange(-0.01, 0.01, 1 / pseudo_sampling_rate)
+signal_short = (
+    np.cos(2 * np.pi * center_frequency * ts_short) * np.sinc(bandwidth * ts_short)
+    + 0.01 * np.cos(2 * np.pi * (center_frequency + bandwidth / 3) * ts_short)
+)
 
-ax.plot(ts_short, signal_short)
-ax.set_title("Original and Sampled Signals")
+ax.plot(ts_short, signal_short, label="Original", linewidth=2)
+
+# Sampled signal
+t_short = np.arange(-0.01, 0.01, 1 / sampling_rate)
+sampled_signal_short = (
+    np.cos(2 * np.pi * center_frequency * t_short) * np.sinc(bandwidth * t_short)
+    + 0.01 * np.cos(2 * np.pi * (center_frequency + bandwidth / 3) * t_short)
+)
+
+ax.stem(
+    t_short,
+    sampled_signal_short,
+    linefmt='r-',
+    markerfmt='ro',
+    basefmt=' ',
+    label="Samples"
+)
+
+# Reconstructed filtered signal
+mask_short = (t_rec >= -0.01) & (t_rec < 0.01)
+ax.plot(
+    t_rec[mask_short],
+    reconstructed_signal[mask_short],
+    color="purple",
+    linewidth=2,
+    label="Band-pass filtered reconstruction"
+)
+
+ax.set_title("Original, Sampled, and Reconstructed Signals")
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Amplitude")
 ax.legend()
-
-# Sampled signal
-t_short = np.arange(-0.01,0.01,1/sampling_rate)
-sampled_signal_short = np.cos(2 * np.pi * center_frequency * t_short) * np.sinc(bandwidth * t_short) \
-    + 0.01 * np.cos(2 * np.pi * (center_frequency+bandwidth/3) * t_short)
-
-ax.stem(t_short, sampled_signal_short, linefmt='r-', markerfmt='ro')
+ax.grid()
 
 st.pyplot(fig)
 
 # Audio playback
-st.markdown('''Original signal''')
+st.markdown("**Original signal**")
 st.audio(signal, sample_rate=pseudo_sampling_rate)
-st.markdown('''Sampled signal''')
-st.audio(sampled_signal, sample_rate=sampling_rate) 
+
+st.markdown("**Sampled signal**")
+st.audio(sampled_signal, sample_rate=sampling_rate)
+
+st.markdown("**Band-pass filtered reconstruction**")
+st.audio(reconstructed_signal, sample_rate=pseudo_sampling_rate)
 
 # Explanation of the generalized Shannon theorem
 with st.expander("Open for comments"):
     st.write("""In this example, aliasing occurs when $F_s$ lies in:""")
-    st.latex('''[0,440] \cup [450,550] \cup [600,733] \cup [900,1100] 
+    st.latex(r'''[0,440] \cup [450,550] \cup [600,733] \cup [900,1100] 
              \cup [1800,2200]''')
     st.write("""
             The generalized Shannon theorem states that to avoid aliasing when 
             sampling a narrowband signal (with central frequency $F_0$ 
             and bandwidth $B$), the sampling frequency must obviously be at 
-            least twice the bandwidth of the signal: """)
-    st.latex('''F_s>=2B''')
+            least twice the bandwidth of the signal:
+            """)
+    st.latex(r'''F_s \geq 2B''')
     st.write("""  
           Yet, not all such frequencies are acceptable, given the possible overlap 
           between positive and negative spectral images.
-          This excludes the following sampling frequencies: """)
-    st.latex('''[(2F_0-B)/k, (2F_0+B)/k ],''')
-    st.write(""" with $k$ integer but not 0. As a matter of fact, for $k$ odd,
+          This excludes the following sampling frequencies:
+          """)
+    st.latex(r'''[(2F_0-B)/k, (2F_0+B)/k ]''')
+    st.write("""with $k$ integer but not 0. As a matter of fact, for $k$ odd,
           values of $F_s$ in these intervals put the Nyquist frequency inside 
           a spectral image; for $k$ even, they put the zero frequency inside a 
-          spectral image. In both cases, aliasing occurs. \\
-          In our example, this clearly leads to excluding $F_s$ from:""")
-    st.latex('''[0,400] \cup [333,440] 
+          spectral image. In both cases, this causes aliasing. \\
+          In our example, this clearly leads to excluding $F_s$ from:
+          """)
+    st.latex(r'''[0,400] \cup [333,440] 
           \cup [450,550] \cup [600,733] \cup [900,1100] \cup [1800,2200]''')
     st.write("""
-          So, in this example, the smallest posible sampling frequency is 440 Hz. \\
+          So, in this example, the smallest possible sampling frequency is 440 Hz. \\
           Notice, by examining the spectral content of the sampled signal, and
           by listening to it, that using sampling frequencies $F_s<2(F_0+B/2)$ 
           leads to signals in the $[0,F_s/2]$ band that are different from the 
           original signal. However, since no aliasing occurs, it is still 
-          possible to recover the original signal (by further digital upsampling 
-          and band-pass filtering).\\
-	  \\
-          _NotaBene_: for convenience, the effect of the sampling frequency on the 
-         magnitude of the sampled signal spectrum has been compensated for in the 
-         plot. """) 
-	
+          possible to recover the original signal by ideal band-pass filtering 
+          around the original band.\\
+          \\
+          _Nota Bene_: for convenience, the effect of the sampling frequency on the 
+          magnitude of the sampled signal spectrum has been compensated for in the 
+          plot.
+          """)
